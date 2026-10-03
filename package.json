@@ -1,0 +1,35 @@
+{
+  "name": "sap-sales-insights-cap",
+  "version": "1.0.0",
+  "description": "SAP-style sales analytics: CAP OData v4 service, SAPUI5 dashboard and a Python AI insight service",
+  "license": "MIT",
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "seed": "python3 db/generate_data.py",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@cap-js/sqlite": "^2",
+    "@sap/cds": "^9",
+    "express": "^4"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": ":memory:"
+        }
+      }
+    },
+    "log": {
+      "levels": {
+        "cds": "warn"
+      }
+    }
+  },
+  "devDependencies": {
+    "@cap-js/cds-test": "^1.0.2"
+  }
+}
