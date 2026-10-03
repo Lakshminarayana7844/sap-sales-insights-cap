@@ -1,0 +1,6 @@
+node_modules/
+__pycache__/
+.pytest_cache/
+*.sqlite
+.DS_Store
+.pytest_cache/
