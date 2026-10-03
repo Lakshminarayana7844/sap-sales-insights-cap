@@ -1,0 +1,13 @@
+services:
+  ml:
+    build: ./ml
+    ports:
+      - "5001:5001"
+  cap:
+    build: .
+    environment:
+      INSIGHTS_URL: http://ml:5001/analyze
+    ports:
+      - "4004:4004"
+    depends_on:
+      - ml
