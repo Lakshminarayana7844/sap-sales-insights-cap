@@ -1,0 +1,122 @@
+<mvc:View
+  controllerName="sales.insights.controller.Main"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.f"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:vizdata="sap.viz.ui5.data"
+  xmlns:vizfeeds="sap.viz.ui5.controls.common.feeds"
+  height="100%">
+  <f:DynamicPage id="page" toggleHeaderOnTitleClick="false">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading><Title text="{i18n>appTitle}"/></f:heading>
+        <f:actions>
+          <Label text="{i18n>filterRegion}" labelFor="regionSelect"/>
+          <Select id="regionSelect" change=".onFilterChange" selectedKey="">
+            <core:Item key="" text="{i18n>all}"/>
+            <core:Item key="DE" text="DE"/>
+            <core:Item key="FR" text="FR"/>
+            <core:Item key="IN" text="IN"/>
+            <core:Item key="NL" text="NL"/>
+            <core:Item key="US" text="US"/>
+          </Select>
+          <Label text="{i18n>filterMaterial}" labelFor="materialSelect"/>
+          <Select id="materialSelect" change=".onFilterChange" selectedKey="">
+            <core:Item key="" text="{i18n>all}"/>
+            <core:Item key="M-100" text="M-100 Hydraulic Pump HP-10"/>
+            <core:Item key="M-200" text="M-200 Control Unit CU-200"/>
+            <core:Item key="M-300" text="M-300 Sensor Kit SK-30"/>
+            <core:Item key="M-400" text="M-400 Drive Motor DM-400"/>
+            <core:Item key="M-500" text="M-500 Gasket Set GS-5"/>
+          </Select>
+        </f:actions>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:content>
+      <VBox class="sapUiSmallMargin" renderType="Bare">
+        <HBox wrap="Wrap" id="kpiBox">
+          <GenericTile class="sapUiTinyMarginEnd sapUiTinyMarginBottom" header="{i18n>kpiRevenue}" frameType="OneByOne">
+            <TileContent unit="EUR"><NumericContent id="kpiRevenue" value="{view>/kpis/revenueFmt}" withMargin="false" truncateValueTo="9"/></TileContent>
+          </GenericTile>
+          <GenericTile class="sapUiTinyMarginEnd sapUiTinyMarginBottom" header="{i18n>kpiOrders}" frameType="OneByOne">
+            <TileContent><NumericContent id="kpiOrders" value="{view>/kpis/orders}" withMargin="false"/></TileContent>
+          </GenericTile>
+          <GenericTile class="sapUiTinyMarginEnd sapUiTinyMarginBottom" header="{i18n>kpiAvg}" frameType="OneByOne">
+            <TileContent unit="EUR"><NumericContent id="kpiAvg" value="{view>/kpis/avgOrderValue}" withMargin="false"/></TileContent>
+          </GenericTile>
+          <GenericTile class="sapUiTinyMarginBottom" header="{i18n>kpiGrowth}" frameType="OneByOne">
+            <TileContent unit="%"><NumericContent id="kpiGrowth" value="{view>/kpis/growthPct}" valueColor="{view>/kpis/growthColor}" indicator="{view>/kpis/growthIndicator}" withMargin="false"/></TileContent>
+          </GenericTile>
+        </HBox>
+
+        <Panel headerText="{i18n>chartTitle}" class="sapUiSmallMarginTop">
+          <viz:VizFrame id="chart" height="320px" width="100%" vizType="line"
+            uiConfig="{applicationSet: 'fiori'}"
+            vizProperties="{title: {visible: false}, plotArea: {dataLabel: {visible: false}}}">
+            <viz:dataset>
+              <vizdata:FlattenedDataset data="{view>/chart}">
+                <vizdata:dimensions>
+                  <vizdata:DimensionDefinition name="Week" value="{view>weekStart}"/>
+                </vizdata:dimensions>
+                <vizdata:measures>
+                  <vizdata:MeasureDefinition name="Revenue" value="{view>revenue}"/>
+                  <vizdata:MeasureDefinition name="Forecast" value="{view>forecast}"/>
+                </vizdata:measures>
+              </vizdata:FlattenedDataset>
+            </viz:dataset>
+            <viz:feeds>
+              <vizfeeds:FeedItem uid="valueAxis" type="Measure" values="Revenue,Forecast"/>
+              <vizfeeds:FeedItem uid="categoryAxis" type="Dimension" values="Week"/>
+            </viz:feeds>
+          </viz:VizFrame>
+        </Panel>
+
+        <Panel headerText="{i18n>insightsTitle}" class="sapUiSmallMarginTop">
+          <MessageStrip id="summary" text="{view>/insights/summary}" type="{view>/insights/type}" showIcon="true" class="sapUiSmallMarginBottom"/>
+          <Table id="anomalyTable" items="{view>/insights/anomalies}" noDataText="No unusual weeks" headerText="{i18n>anomaliesTitle}">
+            <columns>
+              <Column><Text text="{i18n>colWeek}"/></Column>
+              <Column><Text text="{i18n>colType}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>colRevenue}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>colExpected}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>colScore}"/></Column>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <Text text="{view>weekStart}"/>
+                <ObjectStatus text="{view>direction}" state="{= ${view>direction} === 'spike' ? 'Success' : 'Error'}"/>
+                <Text text="{view>revenue}"/>
+                <Text text="{view>expected}"/>
+                <Text text="{view>score}"/>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </Panel>
+
+        <Panel headerText="{i18n>ordersTitle}" class="sapUiSmallMarginTop">
+          <Table id="ordersTable" growing="true" growingThreshold="10"
+                 items="{path: '/Orders', parameters: {$count: true}, sorter: {path: 'orderDate', descending: true}}">
+            <columns>
+              <Column><Text text="{i18n>colDate}"/></Column>
+              <Column><Text text="{i18n>colRegion}"/></Column>
+              <Column><Text text="{i18n>colMaterial}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>colQty}"/></Column>
+              <Column hAlign="End"><Text text="{i18n>colNet}"/></Column>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <Text text="{orderDate}"/>
+                <Text text="{region}"/>
+                <Text text="{material_ID}"/>
+                <Text text="{quantity}"/>
+                <Text text="{netPrice}"/>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </Panel>
+      </VBox>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>
